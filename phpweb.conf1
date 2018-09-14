@@ -1,0 +1,42 @@
+server {
+
+    listen 443;
+  
+    root /data/webroot/laravels/public;
+
+    index index.php index.html index.htm;
+    
+    location /
+    {
+        if (!-e $request_filename){
+         rewrite ^(.*)$ /index.php?s=$1 last;
+        break;
+        }
+    }
+
+
+    location ~ \.php$ {
+          fastcgi_pass   127.0.0.1:9000;
+#       fastcgi_pass  unix:/dev/shm/php-fcgi.sock;
+           fastcgi_index index.php;
+           include fastcgi_params;
+           set $real_script_name $fastcgi_script_name;
+           if ($fastcgi_script_name ~ "^(.+?\.php)(/.+)$") {
+               set $real_script_name $1;
+               set $path_info $2;
+           }
+           fastcgi_param SCRIPT_FILENAME $document_root$real_script_name;
+           fastcgi_param SCRIPT_NAME $real_script_name;
+           fastcgi_param PATH_INFO $path_info;
+    }
+#    location ~ /\.ht
+#    {
+#        deny  all;
+#    }
+}
+server {
+    listen 80;
+    server_name jetaime.top www.jetaime.top;
+    rewrite ^(.*)$ https://$host$1 permanent;
+}
+
